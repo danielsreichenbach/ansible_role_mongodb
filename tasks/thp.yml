@@ -2,6 +2,7 @@
 - name: thp | install tuned
   dnf:
     name: tuned
+  when: ansible_os_family == 'RedHat'
 
 - name: thp | tuned dir
   file:
@@ -9,7 +10,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: thp | tuned conf file
   template:
@@ -17,7 +18,7 @@
     dest: /etc/tuned/virtual-guest-no-thp/tuned.conf
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   register: tuned_conf
 
 - name: thp | enable tuned profile
@@ -39,7 +40,7 @@
     dest: /etc/systemd/system/disable-transparent-hugepages.service
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   register: set_service_file
 
 - name: thp | reload daemons, because a service file changed

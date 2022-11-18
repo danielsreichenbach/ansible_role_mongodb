@@ -2,6 +2,7 @@
 - name: numa | install numactl
   dnf:
     name: numactl
+  when: ansible_os_family == 'RedHat'
 
 - name: numa | check zone reclaim mode
   shell: cat /proc/sys/vm/zone_reclaim_mode
@@ -18,7 +19,7 @@
 - name: numa | service file
   lineinfile:
     path: /usr/lib/systemd/system/mongod.service
-    regexp: '^ExecStart='
+    regexp: "^ExecStart="
     line: "ExecStart=/usr/bin/numactl --interleave=all /usr/bin/mongod $OPTIONS"
   register: numa_service_file
 

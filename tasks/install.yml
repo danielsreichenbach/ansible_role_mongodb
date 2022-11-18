@@ -1,24 +1,44 @@
 ---
 - name: install | repo gpg key
-  rpm_key:
-    key: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
   when: mongo_repo
+  block:
+    - name: install (RedHat) | repo gpg key
+      rpm_key:
+        key: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
+      when: ansible_os_family == 'RedHat'
+    - name: install (Debian) | repo gpg key
+      apt_key:
+        url: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
+      when: ansible_os_family == 'Debian'
 
 - name: install | repo
-  yum_repository:
-    name: "mongodb-org-{{ mongo_version }}"
-    description: 'MongoDB {{ mongo_edition }} repo'
-    file: mongodb
-    baseurl: >-
-      https://repo.mongodb.
-      {{- (mongo_edition == 'enterprise') | ternary('com', 'org') -}}
-      /yum/redhat/$releasever/mongodb-
-      {{- mongo_edition }}/
-      {{- mongo_version }}/x86_64/
-    enabled: true
-    gpgcheck: true
-    gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
   when: mongo_repo
+  block:
+    - name: install (RedHat) | repo
+      yum_repository:
+        name: "mongodb-org-{{ mongo_version }}"
+        description: "MongoDB {{ mongo_edition }} repo"
+        file: mongodb
+        baseurl: >-
+          https://repo.mongodb.{{- (mongo_edition == 'enterprise') | ternary('com', 'org') -}}/yum/redhat/$releasever/mongodb-{{- mongo_edition }}/{{- mongo_version }}/x86_64/
+
+
+        enabled: true
+        gpgcheck: true
+        gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongo_version }}.asc
+      when: ansible_os_family == 'RedHat'
+    - name: Install (Debian) | repo
+      apt_repository:
+        filename: "mongodb-org-{{ mongo_version }}"
+        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.{{- (mongo_edition == 'enterprise') | ternary('com', 'org') -}}/apt/{{ ansible_distribution | lower }} {{ ansible_distribution_release }}/mongodb-org/{{ mongo_version }} main"
+        update_cache: true
+      when: ansible_distribution == 'Debian'
+    - name: Install (Ubuntu) | repo
+      apt_repository:
+        filename: "mongodb-org-{{ mongo_version }}"
+        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.{{- (mongo_edition == 'enterprise') | ternary('com', 'org') -}}/apt/{{ ansible_distribution | lower }} {{ ansible_distribution_release }}/mongodb-org/{{ mongo_version }} multiverse"
+        update_cache: true
+      when: ansible_distribution == 'Ubuntu'
 
 - name: install | group mongod
   group:
@@ -32,7 +52,7 @@
     uid: 28
     system: true
     group: mongod
-    comment: 'MongoDB Server'
+    comment: "MongoDB Server"
     home: "{{ mongo_storage.dbPath }}"
     create_home: false
     shell: /sbin/nologin
@@ -43,16 +63,18 @@
     name:
       - python3-devel
       - python3-pip
+  when: ansible_os_family == 'RedHat'
 
 - name: install | mongo edition {{ mongo_edition }}
   dnf:
     name: mongodb-{{ mongo_edition }}
+  when: ansible_os_family == 'RedHat'
 
 - name: install | data folder
   file:
     state: directory
     path: "{{ mongo_storage.dbPath }}"
-    mode: '0770'
+    mode: "0770"
     owner: mongod
     group: mongod
 
@@ -67,18 +89,17 @@
     state: absent
     path: /var/log/mongodb
   when: >-
-    '/var/log/mongodb' not in mongo_systemlog.path or
-    mongo_systemlog.destination != 'file'
+    '/var/log/mongodb' not in mongo_systemlog.path or mongo_systemlog.destination != 'file'
+
 
 - block:
-
     - name: install | ensure log folder exists
       file:
         path: "{{ mongo_systemlog.path | dirname }}"
         state: directory
         owner: mongod
         group: mongod
-        mode: '0775'
+        mode: "0775"
 
     - name: install | stat if log file exist
       stat:
@@ -92,12 +113,12 @@
         force: true
         group: mongod
         owner: mongod
-        mode: '0755'
+        mode: "0755"
       when: not mongo_log_check.stat.exists
 
   when: >-
-    '/var/log/mongodb' not in mongo_systemlog.path and
-    mongo_systemlog.destination == 'file'
+    '/var/log/mongodb' not in mongo_systemlog.path and mongo_systemlog.destination == 'file'
+
 
 - name: install | pymongo {{ mongo_pymongo_version }}
   pip:

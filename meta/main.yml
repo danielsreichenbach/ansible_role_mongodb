@@ -5,11 +5,14 @@ galaxy_info:
   namespace: kcsuka
   role_name: mongodb
   license: Apache License, Version 2.0
-  min_ansible_version: 2.9
+  min_ansible_version: "2.9"
   platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
     - name: EL
       versions:
-        - 8
+        - "8"
   galaxy_tags:
     - database
     - mongodb
@@ -20,3 +23,6 @@ galaxy_info:
     - nosql
 
 dependencies: []
+
+collections:
+  - community.mongodb
