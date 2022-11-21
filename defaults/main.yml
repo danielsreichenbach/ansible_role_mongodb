@@ -1,16 +1,18 @@
 ---
 mongo_repo: true
 mongo_version: 5.0
-mongo_edition: org  # org or enterprise
+mongo_edition: org # org or enterprise
 mongo_pymongo_version: 3.12.3
 
 # Apply production recommendations, see readme
 mongo_thp: true
 mongo_numa: true
 
-mongo_admin_pass: 'change_me'
+mongo_admin_pass: "change_me"
 mongo_adminuser_name: adminuser
-mongo_adminuser_pass: 'change_me'
+mongo_adminuser_pass: "change_me"
+
+mongo_pidPath: /var/run/mongodb
 
 # --- Defaults for mongod.conf
 # See readme
@@ -36,26 +38,26 @@ mongo_processmanagement:
   timeZoneInfo: /usr/share/zoneinfo
 
 # The keyfile is automatically generated
-mongo_security: ''
+mongo_security: ""
 
-mongo_operationprofiling: ''
+mongo_operationprofiling: ""
 
-mongo_replication: ''
+mongo_replication: ""
 
-mongo_sharding: ''
+mongo_sharding: ""
 
-mongo_auditlog: ''
+mongo_auditlog: ""
 
-mongo_snmp: ''
+mongo_snmp: ""
 
-mongo_custom_cnf: ''
+mongo_custom_cnf: ""
 
 # ---
 
 # When replication is desired, the value should either be
 # primary, secondary or aribter
 # Ensure to include a valid number of nodes, see readme
-mongo_replication_role: ''
+mongo_replication_role: ""
 
 # Define databases and users
 # See readme for examples
@@ -74,11 +76,11 @@ mongo_backup:
   path: /var/lib/mongo_backups
   owner: mongod
   group: mongod
-  mode: '0660'
+  mode: "0660"
   hour: 2
   minute: 5
   day: "*"
-  retention: 46  # in hours
+  retention: 46 # in hours
 
 # Restart mongo after a config change
 mongo_restart_config: true

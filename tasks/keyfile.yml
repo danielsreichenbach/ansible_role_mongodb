@@ -17,15 +17,12 @@
 
 - name: keyfile | block to check which host(s) have the file
   block:
-
     - name: keyfile | create dict of keyfile check
       set_fact:
         keyfile_status: "{{ dict(keys|zip(values)) }}"
       vars:
         keys: "{{ ansible_play_hosts }}"
-        values: "{{ ansible_play_hosts |
-                    map('extract', hostvars, ['keyfile_fact'])
-                    | list }}"
+        values: "{{ ansible_play_hosts | map('extract', hostvars, ['keyfile_fact']) | list }}"
 
     - name: keyfile | set fact when no host has the file
       set_fact:
@@ -46,12 +43,11 @@
 
 - name: keyfile | block to copy keyfile when none has one
   block:
-
     - name: keyfile | create when none has a keyfile
       shell: >-
-        openssl rand -base64 741 > {{ mongo_security.keyFile }} ;
-        chmod 400 {{ mongo_security.keyFile }} ;
-        chown mongod: {{ mongo_security.keyFile }}
+        openssl rand -base64 741 > {{ mongo_security.keyFile }} ; chmod 400 {{ mongo_security.keyFile }} ; chown mongodb: {{ mongo_security.keyFile }}
+
+
       register: new_keyfile
       when: mongo_primary
 
@@ -66,15 +62,14 @@
       copy:
         src: /tmp/mongo_keyfile
         dest: "{{ mongo_security.keyFile }}"
-        mode: '0400'
-        owner: mongod
-        group: mongod
+        mode: "0400"
+        owner: mongodb
+        group: mongodb
 
   when: keyfile_none is defined
 
 - name: keyfile | block to copy keyfile when at least one is missing
   block:
-
     - name: keyfile | fetch keyfile
       fetch:
         src: "{{ mongo_security.keyFile }}"
@@ -86,9 +81,9 @@
       copy:
         src: /tmp/mongo_keyfile
         dest: "{{ mongo_security.keyFile }}"
-        mode: '0400'
-        owner: mongod
-        group: mongod
+        mode: "0400"
+        owner: mongodb
+        group: mongodb
 
   when: keyfile_all is defined and not keyfile_all
 

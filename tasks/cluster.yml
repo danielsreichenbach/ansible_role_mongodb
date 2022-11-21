@@ -1,7 +1,8 @@
 ---
 - name: cluster | check if hosts are in clustered
   shell: >-
-    mongo --port {{ mongo_net.port }} --quiet --eval 'db.isMaster().hosts'
+    mongosh --port {{ mongo_net.port }} --quiet --eval 'db.isMaster().hosts'
+
   register: check_cluster
   changed_when: false
 
@@ -26,15 +27,12 @@
     check_cluster: "{{ check_cluster.stdout }}"
 
 - block:
-
     - name: cluster | create dict of cluster check
       set_fact:
         all_cluster_check: "{{ dict(keys|zip(values)) }}"
       vars:
         keys: "{{ ansible_play_hosts }}"
-        values: "{{ ansible_play_hosts |
-                    map('extract', hostvars, ['check_cluster'])
-                    | list }}"
+        values: "{{ ansible_play_hosts | map('extract', hostvars, ['check_cluster']) | list }}"
 
     - name: cluster | set fact when no host is clustered
       set_fact:
@@ -63,6 +61,7 @@
           'priority': member_weight[hostvars[item].mongo_replication_role]
         }]
       }}
+
   loop: "{{ ansible_play_hosts }}"
   run_once: true
   vars:
@@ -81,7 +80,6 @@
 
 - name: cluster | block to initial build the replica set
   block:
-
     - name: cluster | set fact for initial replication
       set_fact:
         replication_init: true
@@ -92,7 +90,7 @@
         dest: /etc/mongod.conf
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: cluster | restart mongo
       service:
@@ -125,7 +123,7 @@
         dest: /etc/mongod.conf
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: cluster | restart mongod service one by one
       shell: systemctl restart mongod && sleep 15
@@ -148,7 +146,6 @@
       when: mongo_primary
 
   when: no_host_is_clustered is defined
-
 # - name: cluster | include scale playbook when applicable
 #   include_tasks: scale.yml
 #   when:

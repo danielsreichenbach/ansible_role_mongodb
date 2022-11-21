@@ -1,8 +1,14 @@
 ---
 - name: thp | install tuned
-  dnf:
-    name: tuned
-  when: ansible_os_family == 'RedHat'
+  block:
+    - name: thp (RedHat) | install tuned
+      dnf:
+        name: tuned
+      when: ansible_os_family == 'RedHat'
+    - name: thp (Debian) | install tuned
+      apt:
+        name: tuned
+      when: ansible_os_family == 'Debian'
 
 - name: thp | tuned dir
   file:

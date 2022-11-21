@@ -1,8 +1,14 @@
 ---
 - name: numa | install numactl
-  dnf:
-    name: numactl
-  when: ansible_os_family == 'RedHat'
+  block:
+    - name: numa (RedHat) | install numactl
+      dnf:
+        name: numactl
+      when: ansible_os_family == 'RedHat'
+    - name: numa (Debian) | install numactl
+      apt:
+        name: numactl
+      when: ansible_os_family == 'Debian'
 
 - name: numa | check zone reclaim mode
   shell: cat /proc/sys/vm/zone_reclaim_mode

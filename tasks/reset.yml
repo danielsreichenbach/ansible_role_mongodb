@@ -33,12 +33,30 @@
         - "rm -rf {{ mongo_storage.dbPath }}"
         - "rm {{ mongo_security.keyFile | default(omit) }} | echo"
         - "rm -f /etc/systemd/system/disable-transparent-hugepage*"
-        - userdel mongod | echo
+        - userdel mongodb | echo
         - rm -rf /etc/tuned/virtual-guest-no-thp/tuned.conf
         - "rm -rf {{ mongo_backup.path }}"
-        - userdel mongod | echo # sometimes the user isn't removed
+        - userdel mongodb | echo # sometimes the user isn't removed
         - "rm -f /usr/lib/systemd/system/mongod.service"
       when: ansible_os_family == 'RedHat'
+    - name: reset (RedHat) | remove mongo from system
+      shell: "{{ item }}"
+      loop:
+        - "rm -f /etc/apt/sources.list.d/mongodb*.list"
+        - "apt-get autoremove --purge -y mongodb*"
+        - "rm -rf /etc/mongo*"
+        - "rm -rf /var/lib/mongo*"
+        - "rm -rf /var/log/mongo*"
+        - "rm -rf {{ mongo_systemlog.path }}"
+        - "rm -rf {{ mongo_storage.dbPath }}"
+        - "rm {{ mongo_security.keyFile | default(omit) }} | echo"
+        - "rm -f /etc/systemd/system/disable-transparent-hugepage*"
+        - userdel mongodb | echo
+        - rm -rf /etc/tuned/virtual-guest-no-thp/tuned.conf
+        - "rm -rf {{ mongo_backup.path }}"
+        - userdel mongodb | echo # sometimes the user isn't removed
+        - "rm -f /usr/lib/systemd/system/mongod.service"
+      when: ansible_os_family == 'Debian'
 
 - name: reset | remove backup scripts
   cron:
