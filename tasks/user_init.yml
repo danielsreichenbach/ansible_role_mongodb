@@ -20,7 +20,7 @@
     roles: "{{ item.role }}"
     login_host: 127.0.0.1
     login_port: "{{ mongo_net.port }}"
-    no_log: "{{ ansible_verbosity < 3 }}"
+  no_log: "{{ ansible_verbosity < 3 }}"
   loop:
     - name: admin
       pass: "{{ mongo_admin_pass }}"
